@@ -4,7 +4,7 @@ import random
 import time
 
 # التوكن الخاص بك
-API_TOKEN = '8441369377:AAF_jGQ6wQ7hpYp4KdNRs3AHl4pOzABcWKw'
+API_TOKEN = '8441369377:AAHfbkLp-Dze0CBd79plIE1wQ3OEzMdLnd8'
 bot = telebot.TeleBot(API_TOKEN)
 
 user_data = {}

@@ -1,2 +1,0 @@
-# newbot
-botere

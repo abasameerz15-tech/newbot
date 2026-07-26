@@ -1,122 +1,138 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
+    <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>SZ Ultra | TikTok Downloader</title>
     <style>
         /* ===== RESET & GLOBAL ===== */
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', 'Poppins', system-ui, sans-serif; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Poppins', system-ui, sans-serif;
+        }
         html, body {
-            width: 100%; height: 100%;
+            width: 100%;
+            height: 100%;
             overflow: hidden;
             background: #070011;
             color: #fff;
         }
-        /* ===== CANVAS STARS ===== */
+        /* ===== STARFIELD ===== */
         #starfield {
-            position: fixed; top: 0; left: 0;
-            width: 100%; height: 100%;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
             z-index: 0;
             pointer-events: none;
             background: radial-gradient(ellipse at 30% 20%, #1a0030, #05000a);
         }
-        /* ===== OVERLAY MAIN ===== */
+        /* ===== MAIN LAYER ===== */
         .main-layer {
-            position: relative; z-index: 2;
-            width: 100%; height: 100vh;
+            position: relative;
+            z-index: 2;
+            width: 100%;
+            height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
             padding: 20px;
         }
-        /* ===== PRE-CHECK SCREEN (الدائرتان) ===== */
+        /* ===== PRE-CHECK SCREEN ===== */
         #preCheck {
-            position: fixed; top: 0; left: 0;
-            width: 100%; height: 100%;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
             z-index: 100;
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
-            background: rgba(7, 0, 17, 0.96);
-            backdrop-filter: blur(8px);
-            transition: opacity 0.8s ease, visibility 0.8s ease;
+            background: rgba(7, 0, 17, 0.97);
+            backdrop-filter: blur(12px);
+            transition: opacity 0.9s ease, visibility 0.9s ease;
         }
         #preCheck.hidden {
             opacity: 0;
             visibility: hidden;
             pointer-events: none;
         }
-        .check-container {
+        .check-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: #f0e6ff;
+            text-shadow: 0 0 40px #7c3aed88;
+            margin-bottom: 50px;
+            letter-spacing: 1px;
+            text-align: center;
+        }
+        .check-title span {
+            background: linear-gradient(135deg, #fbbf24, #c084fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .check-item {
             display: flex;
-            flex-direction: column;
             align-items: center;
-            gap: 40px;
+            gap: 24px;
+            margin-bottom: 28px;
+            opacity: 0;
+            transform: translateX(-20px);
+            transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
         }
-        .double-ring {
-            position: relative;
-            width: 200px; height: 200px;
+        .check-item.show {
+            opacity: 1;
+            transform: translateX(0);
         }
-        .ring {
-            position: absolute;
+        .check-item .ring-mini {
+            width: 36px;
+            height: 36px;
             border-radius: 50%;
-            border: 4px solid transparent;
-            animation: spin-ring 2.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
-        }
-        .ring-1 {
-            width: 100%; height: 100%;
+            border: 3px solid transparent;
             border-top-color: #c084fc;
             border-right-color: #7c3aed;
-            animation-duration: 1.8s;
+            animation: spin-ring 1.4s linear infinite;
+            flex-shrink: 0;
         }
-        .ring-2 {
-            width: 70%; height: 70%;
-            top: 15%; left: 15%;
-            border-bottom-color: #fbbf24;
-            border-left-color: #a855f7;
-            animation-duration: 2.6s;
-            animation-direction: reverse;
+        .check-item.done .ring-mini {
+            border-color: #34d399;
+            animation: none;
+            background: #34d39933;
+            border: 3px solid #34d399;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+        .check-item.done .ring-mini::after {
+            content: "✓";
+            color: #34d399;
+            font-weight: 700;
+        }
+        .check-item .label {
+            font-size: 20px;
+            font-weight: 500;
+            color: #c4b5d4;
+        }
+        .check-item.done .label {
+            color: #a78bfa;
         }
         @keyframes spin-ring {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
-        .check-text {
-            font-size: 22px;
-            font-weight: 600;
-            color: #c4b5d4;
-            text-align: center;
-            letter-spacing: 0.5px;
-            opacity: 0;
-            animation: fadeText 0.6s ease forwards;
-        }
-        .check-text:nth-of-type(1) { animation-delay: 0.4s; }
-        .check-text:nth-of-type(2) { animation-delay: 1.6s; }
-        .check-text .highlight {
-            color: #fbbf24;
-            font-weight: 700;
-        }
-        .check-text .check-icon {
-            display: inline-block;
-            margin-left: 8px;
-            opacity: 0;
-            transition: 0.3s;
-        }
-        .check-text.done .check-icon {
-            opacity: 1;
-            color: #34d399;
-        }
-        @keyframes fadeText {
-            0% { opacity: 0; transform: translateY(12px); }
-            100% { opacity: 1; transform: translateY(0); }
-        }
-        /* ===== GLASS CARD (الواجهة الرئيسية) ===== */
+        /* ===== GLASS CARD (MAIN) ===== */
         .glass-card {
             max-width: 720px;
             width: 100%;
-            background: rgba(18, 5, 38, 0.75);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
+            background: rgba(18, 5, 38, 0.78);
+            backdrop-filter: blur(22px);
+            -webkit-backdrop-filter: blur(22px);
             border: 1px solid rgba(160, 100, 255, 0.3);
             border-radius: 56px;
             padding: 48px 42px;
@@ -135,7 +151,7 @@
             align-items: center;
             justify-content: center;
             gap: 14px;
-            margin-bottom: 6px;
+            margin-bottom: 4px;
         }
         .brand-icon {
             font-size: 42px;
@@ -156,13 +172,30 @@
             font-size: 16px;
             font-weight: 300;
             border-bottom: 1px solid #2d1b4a;
-            padding-bottom: 20px;
-            margin-bottom: 24px;
+            padding-bottom: 18px;
+            margin-bottom: 20px;
             letter-spacing: 0.3px;
         }
         .sub-title span {
             color: #fbbf24;
             font-weight: 600;
+        }
+        /* ===== IP DISPLAY ===== */
+        .ip-display {
+            background: rgba(10, 0, 25, 0.5);
+            border-radius: 60px;
+            padding: 8px 20px;
+            display: inline-block;
+            margin-bottom: 18px;
+            border: 1px solid #3b1f66;
+            font-size: 14px;
+            color: #8b6aaa;
+        }
+        .ip-display strong {
+            color: #c084fc;
+            font-weight: 600;
+            direction: ltr;
+            display: inline-block;
         }
         /* ===== INPUT WRAPPER ===== */
         .input-wrapper {
@@ -305,33 +338,30 @@
             .input-wrapper input { padding: 14px 0; font-size: 14px; }
             .paste-btn { width: 48px; height: 48px; font-size: 18px; }
             .download-btn { font-size: 18px; padding: 16px; }
-            .check-text { font-size: 17px; }
-            .double-ring { width: 150px; height: 150px; }
+            .check-title { font-size: 20px; }
+            .check-item .label { font-size: 16px; }
+            .ip-display { font-size: 12px; }
         }
-        /* ===== HIDE SCROLL ===== */
         ::-webkit-scrollbar { display: none; }
     </style>
 </head>
 <body>
 
-    <!-- ===== STARFIELD CANVAS ===== -->
+    <!-- STARFIELD -->
     <canvas id="starfield"></canvas>
 
     <!-- ===== PRE-CHECK OVERLAY ===== -->
     <div id="preCheck">
-        <div class="check-container">
-            <div class="double-ring">
-                <div class="ring ring-1"></div>
-                <div class="ring ring-2"></div>
-            </div>
-            <div class="check-text" id="checkHuman">
-                🔍 يتم التحقق من أنك إنسان ولست برنامج روبوت
-                <span class="check-icon">✅</span>
-            </div>
-            <div class="check-text" id="checkIP">
-                🌐 يتم فحص IP الخاص بك
-                <span class="check-icon">✅</span>
-            </div>
+        <div class="check-title">
+            ⏳ انتظر <span>التحقق</span> من أنك إنسان ولست برنامج روبوت
+        </div>
+        <div class="check-item" id="itemHuman">
+            <div class="ring-mini"></div>
+            <span class="label">يتم التحقق من أنك إنسان ولست برنامج روبوت</span>
+        </div>
+        <div class="check-item" id="itemIP">
+            <div class="ring-mini"></div>
+            <span class="label">يتم فحص IP الخاص بك</span>
         </div>
     </div>
 
@@ -347,6 +377,11 @@
                 بأعلى دقة ممكنة • تحميل فوري
             </div>
 
+            <!-- عرض IP -->
+            <div class="ip-display">
+                🌐 <strong id="userIP">جاري جلب IP...</strong>
+            </div>
+
             <div class="input-wrapper">
                 <input type="url" id="tiktokInput" placeholder="https://www.tiktok.com/@user/video/..." dir="ltr">
                 <button class="paste-btn" id="pasteBtn" title="لصق آخر رابط من الحافظة">📋</button>
@@ -360,21 +395,21 @@
 
             <div class="status-bar">
                 <span><span class="dot"></span> جاهز للتحميل</span>
-                <span class="version">v3.0 • SZ</span>
+                <span class="version">v4.0 • SZ</span>
             </div>
         </div>
     </div>
 
     <script>
         // ==========================================================
-        //  1. STARFIELD (نجوم متحركة للأبد)
+        //  1. STARFIELD
         // ==========================================================
         (function initStars() {
             const canvas = document.getElementById('starfield');
             const ctx = canvas.getContext('2d');
             let w, h;
             const stars = [];
-            const COUNT = 280;
+            const COUNT = 300;
 
             function resize() {
                 w = canvas.width = window.innerWidth;
@@ -396,8 +431,7 @@
 
             function draw() {
                 ctx.clearRect(0, 0, w, h);
-                // تدرج الخلفية
-                const grad = ctx.createRadialGradient(w*0.5, h*0.2, 100, w*0.5, h*0.3, h*1.4);
+                const grad = ctx.createRadialGradient(w * 0.5, h * 0.2, 100, w * 0.5, h * 0.3, h * 1.4);
                 grad.addColorStop(0, '#1b0038');
                 grad.addColorStop(0.7, '#0a0018');
                 grad.addColorStop(1, '#030008');
@@ -406,24 +440,20 @@
 
                 for (let s of stars) {
                     s.y -= s.speed;
-                    if (s.y < -10) { s.y = h + 10; s.x = Math.random() * w; }
-
+                    if (s.y < -10) { s.y = h + 10;
+                        s.x = Math.random() * w; }
                     const flicker = Math.sin(Date.now() * s.twinkle) * 0.25 + 0.75;
                     const alpha = s.opacity * flicker;
-
-                    // توهج
                     const grd = ctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, s.size * 3);
                     grd.addColorStop(0, `rgba(200, 170, 255, ${alpha})`);
                     grd.addColorStop(0.4, `rgba(140, 80, 220, ${alpha * 0.5})`);
                     grd.addColorStop(1, `rgba(80, 20, 150, 0)`);
                     ctx.beginPath();
-                    ctx.arc(s.x, s.y, s.size * 3, 0, Math.PI*2);
+                    ctx.arc(s.x, s.y, s.size * 3, 0, Math.PI * 2);
                     ctx.fillStyle = grd;
                     ctx.fill();
-
-                    // نواة بيضاء
                     ctx.beginPath();
-                    ctx.arc(s.x, s.y, s.size * 0.6, 0, Math.PI*2);
+                    ctx.arc(s.x, s.y, s.size * 0.6, 0, Math.PI * 2);
                     ctx.fillStyle = `rgba(255, 248, 255, ${alpha * 0.9})`;
                     ctx.fill();
                 }
@@ -433,31 +463,36 @@
         })();
 
         // ==========================================================
-        //  2. PRE-CHECK SEQUENCE (الدائرتان + رسائل التحقق)
+        //  2. PRE-CHECK SEQUENCE (3 seconds)
         // ==========================================================
-        (function preCheckSequence() {
+        (function preCheck() {
             const preCheck = document.getElementById('preCheck');
-            const checkHuman = document.getElementById('checkHuman');
-            const checkIP = document.getElementById('checkIP');
             const mainCard = document.getElementById('mainCard');
+            const itemHuman = document.getElementById('itemHuman');
+            const itemIP = document.getElementById('itemIP');
 
-            // بعد 1.8 ثانية: أول رسالة تتم
+            // إظهار العنصر الأول بعد 0.5 ثانية
             setTimeout(() => {
-                checkHuman.classList.add('done');
+                itemHuman.classList.add('show');
+            }, 500);
+
+            // إتمام الأول وإظهار الثاني بعد 1.8 ثانية
+            setTimeout(() => {
+                itemHuman.classList.add('done');
+                itemIP.classList.add('show');
             }, 1800);
 
-            // بعد 3.2 ثانية: ثاني رسالة تتم
+            // إتمام الثاني بعد 3 ثواني ثم إخفاء الشاشة وإظهار البطاقة
             setTimeout(() => {
-                checkIP.classList.add('done');
-            }, 3200);
+                itemIP.classList.add('done');
+            }, 3000);
 
-            // بعد 4.5 ثانية: إخفاء الـ overlay وإظهار البطاقة
             setTimeout(() => {
                 preCheck.classList.add('hidden');
                 mainCard.classList.add('visible');
-                // تشغيل صوت بداية (اختياري)
+                // صوت بداية
                 try {
-                    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                    const audioCtx = new(window.AudioContext || window.webkitAudioContext)();
                     const osc = audioCtx.createOscillator();
                     const gain = audioCtx.createGain();
                     osc.connect(gain);
@@ -468,16 +503,30 @@
                     gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.25);
                     osc.start(audioCtx.currentTime);
                     osc.stop(audioCtx.currentTime + 0.25);
-                } catch(e) {}
-            }, 4500);
+                } catch (e) {}
+            }, 3600); // 3.6s total (0.6s extra for smoothness)
         })();
 
         // ==========================================================
-        //  3. CLICK SOUND (Web Audio)
+        //  3. FETCH USER IP
+        // ==========================================================
+        (async function fetchIP() {
+            const ipEl = document.getElementById('userIP');
+            try {
+                const resp = await fetch('https://api.ipify.org?format=json');
+                const data = await resp.json();
+                ipEl.textContent = data.ip || 'غير متاح';
+            } catch (e) {
+                ipEl.textContent = 'غير متاح';
+            }
+        })();
+
+        // ==========================================================
+        //  4. CLICK SOUND
         // ==========================================================
         function playClick() {
             try {
-                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const ctx = new(window.AudioContext || window.webkitAudioContext)();
                 const osc = ctx.createOscillator();
                 const gain = ctx.createGain();
                 osc.connect(gain);
@@ -488,19 +537,17 @@
                 gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.08);
                 osc.start(ctx.currentTime);
                 osc.stop(ctx.currentTime + 0.08);
-            } catch(e) {}
+            } catch (e) {}
         }
-
         document.querySelectorAll('button, .paste-btn, .download-btn').forEach(btn => {
             btn.addEventListener('click', playClick);
         });
 
         // ==========================================================
-        //  4. PASTE BUTTON
+        //  5. PASTE BUTTON
         // ==========================================================
         const pasteBtn = document.getElementById('pasteBtn');
         const inputField = document.getElementById('tiktokInput');
-
         pasteBtn.addEventListener('click', async () => {
             try {
                 const text = await navigator.clipboard.readText();
@@ -509,18 +556,18 @@
                     inputField.style.borderColor = '#c084fc';
                     setTimeout(() => inputField.style.borderColor = '', 400);
                 }
-            } catch(e) {
+            } catch (e) {
                 try {
                     inputField.focus();
                     document.execCommand('paste');
-                } catch(e2) {
+                } catch (e2) {
                     alert('لا يمكن الوصول للحافظة. الرجاء لصق الرابط يدوياً.');
                 }
             }
         });
 
         // ==========================================================
-        //  5. DOWNLOAD FUNCTION (تحميل فوري بدون فتح نافذة)
+        //  6. DOWNLOAD FUNCTION (BLOB – NO REDIRECT, NO NEW TAB)
         // ==========================================================
         const downloadBtn = document.getElementById('downloadBtn');
         const errorDisplay = document.getElementById('errorDisplay');
@@ -544,9 +591,9 @@
             downloadBtn.innerHTML = '<span class="icon-dl">⏳</span> جاري التحميل...';
 
             try {
-                const response = await fetch(`${API_URL}?url=${encodeURIComponent(url)}`);
-                const data = await response.json();
-
+                // 1. جلب معلومات الفيديو
+                const resp = await fetch(`${API_URL}?url=${encodeURIComponent(url)}`);
+                const data = await resp.json();
                 if (data.code !== 0 || !data.data) {
                     throw new Error('الرابط غير صحيح أو الفيديو غير متاح.');
                 }
@@ -554,21 +601,45 @@
                 let videoUrl = data.data.hdplay || data.data.play;
                 if (!videoUrl) throw new Error('لم نستطع الحصول على رابط الفيديو.');
 
-                // ===== التحميل المباشر بدون فتح نافذة =====
+                // 2. تحميل الفيديو باستخدام fetch blob (ضمان عدم فتح نافذة)
+                const videoResp = await fetch(videoUrl);
+                if (!videoResp.ok) throw new Error('فشل جلب بيانات الفيديو.');
+                const blob = await videoResp.blob();
+
+                // 3. إنشاء رابط تحميل عبر Object URL
+                const blobUrl = URL.createObjectURL(blob);
                 const a = document.createElement('a');
-                a.href = videoUrl;
+                a.href = blobUrl;
                 a.download = `tiktok_${Date.now()}.mp4`;
                 a.style.display = 'none';
                 document.body.appendChild(a);
                 a.click();
                 document.body.removeChild(a);
+                // تحرير الذاكرة بعد فترة
+                setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
 
                 errorDisplay.textContent = '✅ تم بدء التحميل بأعلى دقة!';
                 errorDisplay.style.color = '#34d399';
 
             } catch (error) {
-                errorDisplay.textContent = `❌ فشل التحميل: ${error.message}`;
-                errorDisplay.style.color = '#f87171';
+                // في حال فشل fetch blob (مشكلة CORS مثلاً) نستخدم الطريقة التقليدية مع تحذير
+                console.warn('Blob download failed, falling back to direct link.', error);
+                try {
+                    // محاولة استخدام a tag download مباشرة (قد يفتح نافذة في بعض المتصفحات)
+                    const a = document.createElement('a');
+                    a.href = videoUrl;
+                    a.download = `tiktok_${Date.now()}.mp4`;
+                    a.target = '_self';
+                    a.style.display = 'none';
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    errorDisplay.textContent = '✅ تم بدء التحميل (طريقة بديلة)';
+                    errorDisplay.style.color = '#fbbf24';
+                } catch (e2) {
+                    errorDisplay.textContent = `❌ فشل التحميل: ${error.message || 'خطأ غير متوقع'}`;
+                    errorDisplay.style.color = '#f87171';
+                }
             } finally {
                 downloadBtn.disabled = false;
                 downloadBtn.innerHTML = '<span class="icon-dl">⬇️</span> تحميل بأعلى دقة';
@@ -577,11 +648,12 @@
 
         // Enter key
         inputField.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') { e.preventDefault(); downloadBtn.click(); }
+            if (e.key === 'Enter') { e.preventDefault();
+                downloadBtn.click(); }
         });
 
         // ==========================================================
-        //  6. PREVENT SCROLL
+        //  7. PREVENT SCROLL
         // ==========================================================
         window.addEventListener('wheel', e => e.preventDefault(), { passive: false });
         window.addEventListener('touchmove', e => e.preventDefault(), { passive: false });
@@ -591,8 +663,7 @@
             }
         });
 
-        console.log('🪐 SZ Ultra Downloader v3.0 loaded.');
-        console.log('✅ Check sequence will complete in 4.5 seconds.');
+        console.log('🪐 SZ Ultra v4.0 loaded – IP visible, direct blob download.');
     </script>
 </body>
 </html>

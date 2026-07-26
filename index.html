@@ -1,126 +1,193 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>SZ Downloader - TikTok HD</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SZ Ultra | TikTok Downloader</title>
     <style>
-        /* ===== RESET & BASE ===== */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', 'Poppins', system-ui, sans-serif;
-        }
+        /* ===== RESET & GLOBAL ===== */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', 'Poppins', system-ui, sans-serif; }
         html, body {
-            width: 100%;
-            height: 100%;
-            overflow: hidden; /* منع السكرولنج نهائياً */
-            background: #0a0015;
+            width: 100%; height: 100%;
+            overflow: hidden;
+            background: #070011;
             color: #fff;
-            position: relative;
         }
-        /* ===== خلفية النجوم (Canvas) ===== */
+        /* ===== CANVAS STARS ===== */
         #starfield {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            position: fixed; top: 0; left: 0;
+            width: 100%; height: 100%;
             z-index: 0;
             pointer-events: none;
-            background: radial-gradient(ellipse at 50% 30%, #150025, #080010);
+            background: radial-gradient(ellipse at 30% 20%, #1a0030, #05000a);
         }
-        /* ===== الطبقة الرئيسية ===== */
+        /* ===== OVERLAY MAIN ===== */
         .main-layer {
-            position: relative;
-            z-index: 1;
-            width: 100%;
-            height: 100vh;
+            position: relative; z-index: 2;
+            width: 100%; height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
             padding: 20px;
         }
-        /* ===== البطاقة المركزية (Glassmorphism) ===== */
-        .glass-card {
-            max-width: 680px;
-            width: 100%;
-            background: rgba(20, 5, 40, 0.75);
-            backdrop-filter: blur(18px);
-            -webkit-backdrop-filter: blur(18px);
-            border: 1px solid rgba(150, 80, 255, 0.35);
-            border-radius: 48px;
-            padding: 42px 40px;
-            box-shadow: 0 30px 80px rgba(80, 0, 200, 0.5), 0 0 120px rgba(120, 50, 255, 0.2);
+        /* ===== PRE-CHECK SCREEN (الدائرتان) ===== */
+        #preCheck {
+            position: fixed; top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 100;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: rgba(7, 0, 17, 0.96);
+            backdrop-filter: blur(8px);
+            transition: opacity 0.8s ease, visibility 0.8s ease;
+        }
+        #preCheck.hidden {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+        .check-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 40px;
+        }
+        .double-ring {
+            position: relative;
+            width: 200px; height: 200px;
+        }
+        .ring {
+            position: absolute;
+            border-radius: 50%;
+            border: 4px solid transparent;
+            animation: spin-ring 2.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+        }
+        .ring-1 {
+            width: 100%; height: 100%;
+            border-top-color: #c084fc;
+            border-right-color: #7c3aed;
+            animation-duration: 1.8s;
+        }
+        .ring-2 {
+            width: 70%; height: 70%;
+            top: 15%; left: 15%;
+            border-bottom-color: #fbbf24;
+            border-left-color: #a855f7;
+            animation-duration: 2.6s;
+            animation-direction: reverse;
+        }
+        @keyframes spin-ring {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .check-text {
+            font-size: 22px;
+            font-weight: 600;
+            color: #c4b5d4;
             text-align: center;
+            letter-spacing: 0.5px;
+            opacity: 0;
+            animation: fadeText 0.6s ease forwards;
+        }
+        .check-text:nth-of-type(1) { animation-delay: 0.4s; }
+        .check-text:nth-of-type(2) { animation-delay: 1.6s; }
+        .check-text .highlight {
+            color: #fbbf24;
+            font-weight: 700;
+        }
+        .check-text .check-icon {
+            display: inline-block;
+            margin-left: 8px;
+            opacity: 0;
             transition: 0.3s;
-            animation: floatIn 0.8s ease-out;
         }
-        @keyframes floatIn {
-            0% { opacity: 0; transform: scale(0.92) translateY(30px); }
-            100% { opacity: 1; transform: scale(1) translateY(0); }
+        .check-text.done .check-icon {
+            opacity: 1;
+            color: #34d399;
         }
-        /* ===== الشعار والترحيب ===== */
+        @keyframes fadeText {
+            0% { opacity: 0; transform: translateY(12px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+        /* ===== GLASS CARD (الواجهة الرئيسية) ===== */
+        .glass-card {
+            max-width: 720px;
+            width: 100%;
+            background: rgba(18, 5, 38, 0.75);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(160, 100, 255, 0.3);
+            border-radius: 56px;
+            padding: 48px 42px;
+            box-shadow: 0 40px 100px rgba(80, 0, 200, 0.5), 0 0 150px rgba(120, 50, 255, 0.15);
+            text-align: center;
+            opacity: 0;
+            transform: scale(0.94) translateY(40px);
+            transition: all 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .glass-card.visible {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+        }
         .brand {
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 12px;
-            margin-bottom: 8px;
+            gap: 14px;
+            margin-bottom: 6px;
         }
         .brand-icon {
-            font-size: 38px;
-            background: linear-gradient(145deg, #a855f7, #7c3aed);
+            font-size: 42px;
+            background: linear-gradient(145deg, #fbbf24, #a855f7);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
         .brand h1 {
-            font-size: 30px;
+            font-size: 34px;
             font-weight: 800;
-            background: linear-gradient(135deg, #c084fc, #8b5cf6, #a855f7);
+            background: linear-gradient(135deg, #fbbf24, #c084fc, #8b5cf6);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             letter-spacing: -0.5px;
         }
-        .welcome-sub {
-            color: #c4b5d4;
-            font-size: 15px;
-            margin-top: -4px;
-            margin-bottom: 24px;
-            border-bottom: 1px solid #2d1b4a;
-            padding-bottom: 16px;
+        .sub-title {
+            color: #a78bfa;
+            font-size: 16px;
             font-weight: 300;
+            border-bottom: 1px solid #2d1b4a;
+            padding-bottom: 20px;
+            margin-bottom: 24px;
             letter-spacing: 0.3px;
         }
-        .welcome-sub span {
-            color: #a78bfa;
+        .sub-title span {
+            color: #fbbf24;
             font-weight: 600;
         }
-        /* ===== حقل الإدخال ===== */
+        /* ===== INPUT WRAPPER ===== */
         .input-wrapper {
             display: flex;
             align-items: center;
-            gap: 10px;
-            background: rgba(10, 0, 25, 0.6);
-            border: 1.5px solid #3b1f66;
-            border-radius: 60px;
-            padding: 4px 4px 4px 20px;
+            gap: 12px;
+            background: rgba(10, 0, 25, 0.7);
+            border: 2px solid #3b1f66;
+            border-radius: 80px;
+            padding: 4px 4px 4px 24px;
             transition: 0.3s;
-            box-shadow: inset 0 2px 15px rgba(0,0,0,0.6);
-            margin-bottom: 16px;
+            box-shadow: inset 0 2px 20px rgba(0,0,0,0.7);
+            margin-bottom: 18px;
         }
         .input-wrapper:focus-within {
-            border-color: #a855f7;
-            box-shadow: 0 0 30px #7c3aed55, inset 0 2px 15px #000;
+            border-color: #c084fc;
+            box-shadow: 0 0 40px #7c3aed66, inset 0 2px 20px #000;
         }
         .input-wrapper input {
             flex: 1;
             background: transparent;
             border: none;
-            padding: 16px 0;
+            padding: 18px 0;
             color: #f0e6ff;
-            font-size: 16px;
+            font-size: 17px;
             outline: none;
             min-width: 0;
             direction: ltr;
@@ -132,11 +199,11 @@
         .paste-btn {
             background: #2d1b4a;
             border: none;
-            width: 52px;
-            height: 52px;
+            width: 58px;
+            height: 58px;
             border-radius: 50%;
             color: #c4b5d4;
-            font-size: 20px;
+            font-size: 22px;
             cursor: pointer;
             transition: 0.25s;
             display: flex;
@@ -148,33 +215,33 @@
         .paste-btn:hover {
             background: #7c3aed;
             color: #fff;
-            box-shadow: 0 0 30px #7c3aed88;
+            box-shadow: 0 0 40px #7c3aed99;
             transform: scale(1.05);
         }
         .paste-btn:active { transform: scale(0.92); }
-        /* ===== زر التحميل ===== */
+        /* ===== DOWNLOAD BUTTON ===== */
         .download-btn {
             width: 100%;
-            padding: 18px;
+            padding: 20px;
             background: linear-gradient(145deg, #8b5cf6, #6d28d9);
             border: none;
-            border-radius: 60px;
-            font-size: 20px;
+            border-radius: 80px;
+            font-size: 22px;
             font-weight: 700;
             color: #fff;
             cursor: pointer;
             transition: 0.3s;
-            box-shadow: 0 6px 35px #6d28d966;
+            box-shadow: 0 8px 45px #6d28d977;
             letter-spacing: 1px;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 12px;
-            margin-top: 4px;
+            gap: 14px;
+            margin-top: 6px;
         }
         .download-btn:hover:not(:disabled) {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 50px #7c3aedaa;
+            transform: translateY(-4px);
+            box-shadow: 0 12px 60px #7c3aedbb;
             background: linear-gradient(145deg, #9d71fd, #7c3aed);
         }
         .download-btn:disabled {
@@ -183,41 +250,40 @@
             transform: none;
         }
         .download-btn .icon-dl {
-            font-size: 24px;
+            font-size: 26px;
         }
-        /* ===== رسالة الخطأ ===== */
+        /* ===== ERROR & STATUS ===== */
         .error-msg {
             color: #f87171;
-            font-size: 14px;
-            margin-top: 14px;
-            min-height: 24px;
+            font-size: 15px;
+            margin-top: 16px;
+            min-height: 28px;
             font-weight: 500;
             background: #2a0f1a44;
-            padding: 8px 16px;
-            border-radius: 40px;
+            padding: 10px 20px;
+            border-radius: 60px;
             border: 1px solid #7f1d2d33;
             display: inline-block;
             backdrop-filter: blur(4px);
         }
-        /* ===== شريط الحالة السفلي ===== */
         .status-bar {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-top: 18px;
+            margin-top: 22px;
             color: #5a3d7a;
-            font-size: 12px;
+            font-size: 13px;
             border-top: 1px solid #1f0e33;
-            padding-top: 14px;
+            padding-top: 16px;
         }
         .status-bar .dot {
             display: inline-block;
-            width: 8px;
-            height: 8px;
+            width: 10px;
+            height: 10px;
             background: #a78bfa;
             border-radius: 50%;
-            margin-left: 6px;
-            animation: pulse-dot 1.8s infinite;
+            margin-left: 8px;
+            animation: pulse-dot 1.6s infinite;
         }
         @keyframes pulse-dot {
             0% { opacity: 0.3; transform: scale(0.8); }
@@ -226,175 +292,212 @@
         }
         .status-bar .version {
             background: #1f0e33;
-            padding: 2px 14px;
-            border-radius: 30px;
-            font-size: 10px;
+            padding: 4px 18px;
+            border-radius: 40px;
+            font-size: 11px;
             color: #8b6aaa;
         }
         /* ===== RESPONSIVE ===== */
-        @media (max-width: 550px) {
-            .glass-card { padding: 28px 18px; border-radius: 32px; }
-            .brand h1 { font-size: 22px; }
+        @media (max-width: 600px) {
+            .glass-card { padding: 30px 18px; border-radius: 36px; }
+            .brand h1 { font-size: 24px; }
             .input-wrapper { padding: 2px 2px 2px 14px; }
             .input-wrapper input { padding: 14px 0; font-size: 14px; }
-            .paste-btn { width: 44px; height: 44px; font-size: 17px; }
-            .download-btn { font-size: 17px; padding: 16px; }
+            .paste-btn { width: 48px; height: 48px; font-size: 18px; }
+            .download-btn { font-size: 18px; padding: 16px; }
+            .check-text { font-size: 17px; }
+            .double-ring { width: 150px; height: 150px; }
         }
-        /* ===== صوت مخفي (للتأثيرات) ===== */
-        #clickSound { display: none; }
+        /* ===== HIDE SCROLL ===== */
+        ::-webkit-scrollbar { display: none; }
     </style>
 </head>
 <body>
 
-    <!-- ===== قماش النجوم ===== -->
+    <!-- ===== STARFIELD CANVAS ===== -->
     <canvas id="starfield"></canvas>
 
-    <!-- ===== الصوت المخفي (يتم تشغيله عبر JS) ===== -->
-    <audio id="clickSound" preload="auto">
-        <source src="data:audio/wav;base64,U0lGR...=" type="audio/wav">
-    </audio>
-    <!-- نستخدم صوت مولّد بـ JS كاحتياطي -->
+    <!-- ===== PRE-CHECK OVERLAY ===== -->
+    <div id="preCheck">
+        <div class="check-container">
+            <div class="double-ring">
+                <div class="ring ring-1"></div>
+                <div class="ring ring-2"></div>
+            </div>
+            <div class="check-text" id="checkHuman">
+                🔍 يتم التحقق من أنك إنسان ولست برنامج روبوت
+                <span class="check-icon">✅</span>
+            </div>
+            <div class="check-text" id="checkIP">
+                🌐 يتم فحص IP الخاص بك
+                <span class="check-icon">✅</span>
+            </div>
+        </div>
+    </div>
 
-    <!-- ===== الطبقة الرئيسية ===== -->
+    <!-- ===== MAIN UI ===== -->
     <div class="main-layer">
-        <div class="glass-card">
-
-            <!-- الترحيب -->
+        <div class="glass-card" id="mainCard">
             <div class="brand">
                 <span class="brand-icon">🪐</span>
                 <h1>متصفح SZ</h1>
             </div>
-            <div class="welcome-sub">
-                <span>✨</span> لتنزيل فيديوهات تيك توك بدون علامة مائية <span>✨</span><br />
-                بأعلى دقة ممكنة
+            <div class="sub-title">
+                <span>✦</span> تحميل فيديوهات تيك توك بدون علامة مائية <span>✦</span><br>
+                بأعلى دقة ممكنة • تحميل فوري
             </div>
 
-            <!-- حقل الإدخال + زر اللصق -->
             <div class="input-wrapper">
-                <input type="url" id="tiktokInput" placeholder="https://www.tiktok.com/@user/video/123456789" dir="ltr" />
+                <input type="url" id="tiktokInput" placeholder="https://www.tiktok.com/@user/video/..." dir="ltr">
                 <button class="paste-btn" id="pasteBtn" title="لصق آخر رابط من الحافظة">📋</button>
             </div>
 
-            <!-- زر التحميل -->
             <button class="download-btn" id="downloadBtn">
                 <span class="icon-dl">⬇️</span> تحميل بأعلى دقة
             </button>
 
-            <!-- منطقة الخطأ -->
             <div id="errorDisplay" class="error-msg"></div>
 
-            <!-- شريط الحالة -->
             <div class="status-bar">
-                <span><span class="dot"></span> جاهز</span>
-                <span class="version">v2.0 • SZ</span>
+                <span><span class="dot"></span> جاهز للتحميل</span>
+                <span class="version">v3.0 • SZ</span>
             </div>
-
         </div>
     </div>
 
     <script>
-        // ============================================================
-        //  1. نظام النجوم (Canvas) – تصعد للأبد
-        // ============================================================
+        // ==========================================================
+        //  1. STARFIELD (نجوم متحركة للأبد)
+        // ==========================================================
         (function initStars() {
             const canvas = document.getElementById('starfield');
             const ctx = canvas.getContext('2d');
-            let width, height;
+            let w, h;
             const stars = [];
-            const STAR_COUNT = 240;
+            const COUNT = 280;
 
             function resize() {
-                width = canvas.width = window.innerWidth;
-                height = canvas.height = window.innerHeight;
+                w = canvas.width = window.innerWidth;
+                h = canvas.height = window.innerHeight;
             }
             window.addEventListener('resize', resize);
             resize();
 
-            // إنشاء النجوم
-            for (let i = 0; i < STAR_COUNT; i++) {
+            for (let i = 0; i < COUNT; i++) {
                 stars.push({
-                    x: Math.random() * width,
-                    y: Math.random() * height,
-                    size: Math.random() * 2.2 + 0.6,
-                    speed: Math.random() * 0.8 + 0.3,
-                    opacity: Math.random() * 0.8 + 0.3,
-                    twinkle: Math.random() * 0.02 + 0.005
+                    x: Math.random() * w,
+                    y: Math.random() * h,
+                    size: Math.random() * 2.4 + 0.5,
+                    speed: Math.random() * 0.9 + 0.2,
+                    opacity: Math.random() * 0.8 + 0.2,
+                    twinkle: Math.random() * 0.025 + 0.005
                 });
             }
 
-            function drawStars() {
-                ctx.clearRect(0, 0, width, height);
-
-                // خلفية متدرجة (تعمق)
-                const grad = ctx.createRadialGradient(width/2, height*0.3, 100, width/2, height*0.3, height*1.2);
-                grad.addColorStop(0, '#1a0033');
-                grad.addColorStop(1, '#05000a');
+            function draw() {
+                ctx.clearRect(0, 0, w, h);
+                // تدرج الخلفية
+                const grad = ctx.createRadialGradient(w*0.5, h*0.2, 100, w*0.5, h*0.3, h*1.4);
+                grad.addColorStop(0, '#1b0038');
+                grad.addColorStop(0.7, '#0a0018');
+                grad.addColorStop(1, '#030008');
                 ctx.fillStyle = grad;
-                ctx.fillRect(0, 0, width, height);
+                ctx.fillRect(0, 0, w, h);
 
-                // رسم النجوم
                 for (let s of stars) {
-                    // تحريك للأعلى
                     s.y -= s.speed;
-                    if (s.y < -10) {
-                        s.y = height + 10;
-                        s.x = Math.random() * width;
-                    }
+                    if (s.y < -10) { s.y = h + 10; s.x = Math.random() * w; }
 
-                    // وميض خفيف
-                    const flicker = Math.sin(Date.now() * s.twinkle) * 0.2 + 0.8;
+                    const flicker = Math.sin(Date.now() * s.twinkle) * 0.25 + 0.75;
                     const alpha = s.opacity * flicker;
 
+                    // توهج
+                    const grd = ctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, s.size * 3);
+                    grd.addColorStop(0, `rgba(200, 170, 255, ${alpha})`);
+                    grd.addColorStop(0.4, `rgba(140, 80, 220, ${alpha * 0.5})`);
+                    grd.addColorStop(1, `rgba(80, 20, 150, 0)`);
                     ctx.beginPath();
-                    ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2);
-                    // توهج أرجواني للنجوم
-                    const gradient = ctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, s.size * 2.5);
-                    gradient.addColorStop(0, `rgba(200, 160, 255, ${alpha})`);
-                    gradient.addColorStop(1, `rgba(120, 60, 200, 0)`);
-                    ctx.fillStyle = gradient;
+                    ctx.arc(s.x, s.y, s.size * 3, 0, Math.PI*2);
+                    ctx.fillStyle = grd;
                     ctx.fill();
 
-                    // لب أبيض
+                    // نواة بيضاء
                     ctx.beginPath();
-                    ctx.arc(s.x, s.y, s.size * 0.5, 0, Math.PI * 2);
-                    ctx.fillStyle = `rgba(255, 255, 255, ${alpha * 0.7})`;
+                    ctx.arc(s.x, s.y, s.size * 0.6, 0, Math.PI*2);
+                    ctx.fillStyle = `rgba(255, 248, 255, ${alpha * 0.9})`;
                     ctx.fill();
                 }
-
-                requestAnimationFrame(drawStars);
+                requestAnimationFrame(draw);
             }
-            drawStars();
+            draw();
         })();
 
-        // ============================================================
-        //  2. نظام الصوت (نقرات خفيفة)
-        // ============================================================
-        function playClickSound() {
-            try {
-                // توليد صوت نبضي باستخدام Web Audio (بدون ملف خارجي)
-                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                const oscillator = audioCtx.createOscillator();
-                const gainNode = audioCtx.createGain();
-                oscillator.connect(gainNode);
-                gainNode.connect(audioCtx.destination);
+        // ==========================================================
+        //  2. PRE-CHECK SEQUENCE (الدائرتان + رسائل التحقق)
+        // ==========================================================
+        (function preCheckSequence() {
+            const preCheck = document.getElementById('preCheck');
+            const checkHuman = document.getElementById('checkHuman');
+            const checkIP = document.getElementById('checkIP');
+            const mainCard = document.getElementById('mainCard');
 
-                oscillator.frequency.value = 1200;
-                oscillator.type = 'sine';
-                gainNode.gain.setValueAtTime(0.15, audioCtx.currentTime);
-                gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.08);
-                oscillator.start(audioCtx.currentTime);
-                oscillator.stop(audioCtx.currentTime + 0.08);
-            } catch(e) { /* تجاهل إن تعذر */ }
+            // بعد 1.8 ثانية: أول رسالة تتم
+            setTimeout(() => {
+                checkHuman.classList.add('done');
+            }, 1800);
+
+            // بعد 3.2 ثانية: ثاني رسالة تتم
+            setTimeout(() => {
+                checkIP.classList.add('done');
+            }, 3200);
+
+            // بعد 4.5 ثانية: إخفاء الـ overlay وإظهار البطاقة
+            setTimeout(() => {
+                preCheck.classList.add('hidden');
+                mainCard.classList.add('visible');
+                // تشغيل صوت بداية (اختياري)
+                try {
+                    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.frequency.value = 880;
+                    osc.type = 'sine';
+                    gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.25);
+                    osc.start(audioCtx.currentTime);
+                    osc.stop(audioCtx.currentTime + 0.25);
+                } catch(e) {}
+            }, 4500);
+        })();
+
+        // ==========================================================
+        //  3. CLICK SOUND (Web Audio)
+        // ==========================================================
+        function playClick() {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.frequency.value = 1200;
+                osc.type = 'sine';
+                gain.gain.setValueAtTime(0.12, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.08);
+                osc.start(ctx.currentTime);
+                osc.stop(ctx.currentTime + 0.08);
+            } catch(e) {}
         }
 
-        // ربط الصوت بكل النقرات المهمة
         document.querySelectorAll('button, .paste-btn, .download-btn').forEach(btn => {
-            btn.addEventListener('click', playClickSound);
+            btn.addEventListener('click', playClick);
         });
 
-        // ============================================================
-        //  3. وظيفة اللصق من الحافظة
-        // ============================================================
+        // ==========================================================
+        //  4. PASTE BUTTON
+        // ==========================================================
         const pasteBtn = document.getElementById('pasteBtn');
         const inputField = document.getElementById('tiktokInput');
 
@@ -403,29 +506,24 @@
                 const text = await navigator.clipboard.readText();
                 if (text) {
                     inputField.value = text.trim();
-                    // تأثير وميض
-                    inputField.style.borderColor = '#a855f7';
+                    inputField.style.borderColor = '#c084fc';
                     setTimeout(() => inputField.style.borderColor = '', 400);
-                    playClickSound();
                 }
-            } catch (e) {
-                // محاولة بديلة باستخدام execCommand (للأجهزة القديمة)
+            } catch(e) {
                 try {
                     inputField.focus();
                     document.execCommand('paste');
-                } catch (e2) {
-                    alert('عذراً، لا يمكن الوصول إلى الحافظة. الرجاء لصق الرابط يدوياً.');
+                } catch(e2) {
+                    alert('لا يمكن الوصول للحافظة. الرجاء لصق الرابط يدوياً.');
                 }
             }
         });
 
-        // ============================================================
-        //  4. وظيفة التحميل الرئيسية (TikTok HD بدون علامة مائية)
-        // ============================================================
+        // ==========================================================
+        //  5. DOWNLOAD FUNCTION (تحميل فوري بدون فتح نافذة)
+        // ==========================================================
         const downloadBtn = document.getElementById('downloadBtn');
         const errorDisplay = document.getElementById('errorDisplay');
-
-        // نستخدم واجهة برمجة tikwm.com المجانية (الأكثر ثباتاً)
         const API_URL = 'https://www.tikwm.com/api/';
 
         downloadBtn.addEventListener('click', async () => {
@@ -435,10 +533,8 @@
                 errorDisplay.style.color = '#f87171';
                 return;
             }
-
-            // التحقق من أن الرابط من تيك توك
             if (!url.includes('tiktok.com') && !url.includes('vm.tiktok')) {
-                errorDisplay.textContent = '⚠️ الرابط غير صالح. الرجاء إدخال رابط تيك توك صحيح.';
+                errorDisplay.textContent = '⚠️ الرابط غير صالح. يجب أن يكون رابط تيك توك.';
                 errorDisplay.style.color = '#fbbf24';
                 return;
             }
@@ -448,24 +544,21 @@
             downloadBtn.innerHTML = '<span class="icon-dl">⏳</span> جاري التحميل...';
 
             try {
-                // إرسال الطلب إلى API
                 const response = await fetch(`${API_URL}?url=${encodeURIComponent(url)}`);
                 const data = await response.json();
 
                 if (data.code !== 0 || !data.data) {
-                    throw new Error('الرابط غير صحيح أو الفيديو غير موجود.');
+                    throw new Error('الرابط غير صحيح أو الفيديو غير متاح.');
                 }
 
-                // الحصول على أعلى دقة (hdplay) أو fallback (play)
                 let videoUrl = data.data.hdplay || data.data.play;
-                if (!videoUrl) {
-                    throw new Error('لم نتمكن من استخراج رابط الفيديو.');
-                }
+                if (!videoUrl) throw new Error('لم نستطع الحصول على رابط الفيديو.');
 
-                // بدء التحميل عبر إنشاء رابط مؤقت
+                // ===== التحميل المباشر بدون فتح نافذة =====
                 const a = document.createElement('a');
                 a.href = videoUrl;
                 a.download = `tiktok_${Date.now()}.mp4`;
+                a.style.display = 'none';
                 document.body.appendChild(a);
                 a.click();
                 document.body.removeChild(a);
@@ -474,7 +567,7 @@
                 errorDisplay.style.color = '#34d399';
 
             } catch (error) {
-                errorDisplay.textContent = `❌ فشل التحميل: ${error.message || 'خطأ غير متوقع'}`;
+                errorDisplay.textContent = `❌ فشل التحميل: ${error.message}`;
                 errorDisplay.style.color = '#f87171';
             } finally {
                 downloadBtn.disabled = false;
@@ -482,35 +575,24 @@
             }
         });
 
-        // ============================================================
-        //  5. منع السكرولنج نهائياً (تأكيد)
-        // ============================================================
-        window.addEventListener('wheel', (e) => e.preventDefault(), { passive: false });
-        window.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
-        document.addEventListener('keydown', (e) => {
+        // Enter key
+        inputField.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') { e.preventDefault(); downloadBtn.click(); }
+        });
+
+        // ==========================================================
+        //  6. PREVENT SCROLL
+        // ==========================================================
+        window.addEventListener('wheel', e => e.preventDefault(), { passive: false });
+        window.addEventListener('touchmove', e => e.preventDefault(), { passive: false });
+        document.addEventListener('keydown', e => {
             if (e.key === 'ArrowDown' || e.key === 'ArrowUp' || e.key === 'PageDown' || e.key === 'PageUp') {
                 e.preventDefault();
             }
         });
 
-        // ============================================================
-        //  6. رسالة ترحيب أولية
-        // ============================================================
-        console.log('🪐 متصفح SZ - TikTok Downloader Pro');
-        console.log('✨ مرحباً بك! الصق الرابط وانطلق.');
-
-        // ============================================================
-        //  7. دعم الضغط على Enter في حقل الإدخال
-        // ============================================================
-        inputField.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                downloadBtn.click();
-            }
-        });
-
-        // تحذير: في حال عدم وجود صوت Web Audio (نادر) نستخدم fallback
-        console.log('🔊 أصوات النقرات مفعلة (Web Audio).');
+        console.log('🪐 SZ Ultra Downloader v3.0 loaded.');
+        console.log('✅ Check sequence will complete in 4.5 seconds.');
     </script>
 </body>
 </html>

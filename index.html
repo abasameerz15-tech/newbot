@@ -1,408 +1,516 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Delta Bypass Pro - Pure JS</title>
-    <!-- ===== التصميم العصري الاحترافي ===== -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>SZ Downloader - TikTok HD</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; }
-        body {
-            min-height: 100vh;
-            background: #080e1a;
+        /* ===== RESET & BASE ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Poppins', system-ui, sans-serif;
+        }
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden; /* منع السكرولنج نهائياً */
+            background: #0a0015;
+            color: #fff;
+            position: relative;
+        }
+        /* ===== خلفية النجوم (Canvas) ===== */
+        #starfield {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+            background: radial-gradient(ellipse at 50% 30%, #150025, #080010);
+        }
+        /* ===== الطبقة الرئيسية ===== */
+        .main-layer {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 16px;
+            padding: 20px;
         }
-        .card {
-            max-width: 960px;
+        /* ===== البطاقة المركزية (Glassmorphism) ===== */
+        .glass-card {
+            max-width: 680px;
             width: 100%;
-            background: #101c30;
-            border-radius: 32px;
-            padding: 35px 30px;
-            border: 1px solid #1f3a5a;
-            box-shadow: 0 20px 60px #00000080, 0 0 60px #0077ff15;
+            background: rgba(20, 5, 40, 0.75);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            border: 1px solid rgba(150, 80, 255, 0.35);
+            border-radius: 48px;
+            padding: 42px 40px;
+            box-shadow: 0 30px 80px rgba(80, 0, 200, 0.5), 0 0 120px rgba(120, 50, 255, 0.2);
+            text-align: center;
+            transition: 0.3s;
+            animation: floatIn 0.8s ease-out;
         }
-        .header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; margin-bottom: 8px; }
-        .badge { background: #00d4ff22; color: #00d4ff; padding: 4px 18px; border-radius: 30px; font-size: 11px; border: 1px solid #00d4ff44; font-weight: 700; letter-spacing: 1px; }
-        h1 { color: #fff; font-size: 28px; font-weight: 700; display: flex; align-items: center; gap: 10px; }
-        h1 span { background: linear-gradient(135deg, #00d4ff, #0066ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .sub { color: #8aa3c9; padding: 10px 0 20px 0; border-bottom: 1px solid #1f2f44; margin-bottom: 20px; display: flex; gap: 15px; flex-wrap: wrap; }
-        .sub code { background: #0a1520; padding: 3px 12px; border-radius: 20px; color: #7fbeff; font-size: 12px; }
-        .input-area { display: flex; flex-direction: column; gap: 10px; margin-bottom: 22px; }
-        .input-area label { color: #b0c8e8; font-size: 13px; font-weight: 600; }
-        .row { display: flex; gap: 12px; flex-wrap: wrap; }
-        .row input { flex: 1; min-width: 200px; padding: 16px 22px; background: #0a1322; border: 1px solid #28415e; border-radius: 16px; color: #e5f0ff; font-size: 15px; outline: none; transition: 0.3s; }
-        .row input:focus { border-color: #00d4ff; box-shadow: 0 0 20px #00d4ff33; }
-        .row button {
-            padding: 16px 38px;
-            background: linear-gradient(145deg, #00c8ff, #0055ff);
+        @keyframes floatIn {
+            0% { opacity: 0; transform: scale(0.92) translateY(30px); }
+            100% { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        /* ===== الشعار والترحيب ===== */
+        .brand {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 8px;
+        }
+        .brand-icon {
+            font-size: 38px;
+            background: linear-gradient(145deg, #a855f7, #7c3aed);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .brand h1 {
+            font-size: 30px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #c084fc, #8b5cf6, #a855f7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.5px;
+        }
+        .welcome-sub {
+            color: #c4b5d4;
+            font-size: 15px;
+            margin-top: -4px;
+            margin-bottom: 24px;
+            border-bottom: 1px solid #2d1b4a;
+            padding-bottom: 16px;
+            font-weight: 300;
+            letter-spacing: 0.3px;
+        }
+        .welcome-sub span {
+            color: #a78bfa;
+            font-weight: 600;
+        }
+        /* ===== حقل الإدخال ===== */
+        .input-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(10, 0, 25, 0.6);
+            border: 1.5px solid #3b1f66;
+            border-radius: 60px;
+            padding: 4px 4px 4px 20px;
+            transition: 0.3s;
+            box-shadow: inset 0 2px 15px rgba(0,0,0,0.6);
+            margin-bottom: 16px;
+        }
+        .input-wrapper:focus-within {
+            border-color: #a855f7;
+            box-shadow: 0 0 30px #7c3aed55, inset 0 2px 15px #000;
+        }
+        .input-wrapper input {
+            flex: 1;
+            background: transparent;
             border: none;
-            border-radius: 16px;
-            font-weight: 700;
+            padding: 16px 0;
+            color: #f0e6ff;
             font-size: 16px;
+            outline: none;
+            min-width: 0;
+            direction: ltr;
+        }
+        .input-wrapper input::placeholder {
+            color: #6b4e8a;
+            font-weight: 300;
+        }
+        .paste-btn {
+            background: #2d1b4a;
+            border: none;
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            color: #c4b5d4;
+            font-size: 20px;
+            cursor: pointer;
+            transition: 0.25s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            border: 1px solid #4a2a6e;
+        }
+        .paste-btn:hover {
+            background: #7c3aed;
+            color: #fff;
+            box-shadow: 0 0 30px #7c3aed88;
+            transform: scale(1.05);
+        }
+        .paste-btn:active { transform: scale(0.92); }
+        /* ===== زر التحميل ===== */
+        .download-btn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(145deg, #8b5cf6, #6d28d9);
+            border: none;
+            border-radius: 60px;
+            font-size: 20px;
+            font-weight: 700;
             color: #fff;
             cursor: pointer;
             transition: 0.3s;
-            text-transform: uppercase;
-            letter-spacing: 1.2px;
-            box-shadow: 0 4px 25px #0044ff55;
-            white-space: nowrap;
+            box-shadow: 0 6px 35px #6d28d966;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-top: 4px;
         }
-        .row button:hover:not(:disabled) { transform: translateY(-3px); box-shadow: 0 8px 40px #0066ffaa; }
-        .row button:disabled { opacity: 0.5; cursor: not-allowed; }
-        .log-box {
-            background: #060c18;
-            border-radius: 18px;
-            padding: 16px 18px;
-            height: 280px;
-            overflow-y: auto;
-            border: 1px solid #1d3148;
-            margin: 18px 0;
-            font-family: 'Courier New', monospace;
-            font-size: 13px;
-            color: #7fbeff;
-            box-shadow: inset 0 4px 30px #00000099;
+        .download-btn:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 50px #7c3aedaa;
+            background: linear-gradient(145deg, #9d71fd, #7c3aed);
         }
-        .log-box::-webkit-scrollbar { width: 5px; }
-        .log-box::-webkit-scrollbar-track { background: #060c18; }
-        .log-box::-webkit-scrollbar-thumb { background: #00d4ff; border-radius: 8px; }
-        .log-entry { padding: 5px 0; border-bottom: 1px solid #101e30; display: flex; gap: 14px; }
-        .log-time { color: #4a6b8a; min-width: 70px; font-size: 11px; }
-        .log-msg { word-break: break-all; }
-        .log-msg.ok { color: #00ff88; }
-        .log-msg.err { color: #ff4760; }
-        .log-msg.inf { color: #ffb347; }
-        .log-msg.sys { color: #6f8fbf; }
-        .result-panel {
-            background: #0a1424;
-            border-radius: 16px;
-            padding: 14px 20px;
+        .download-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .download-btn .icon-dl {
+            font-size: 24px;
+        }
+        /* ===== رسالة الخطأ ===== */
+        .error-msg {
+            color: #f87171;
+            font-size: 14px;
+            margin-top: 14px;
+            min-height: 24px;
+            font-weight: 500;
+            background: #2a0f1a44;
+            padding: 8px 16px;
+            border-radius: 40px;
+            border: 1px solid #7f1d2d33;
+            display: inline-block;
+            backdrop-filter: blur(4px);
+        }
+        /* ===== شريط الحالة السفلي ===== */
+        .status-bar {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            flex-wrap: wrap;
-            gap: 12px;
-            border: 1px solid #1e3a5f;
+            margin-top: 18px;
+            color: #5a3d7a;
+            font-size: 12px;
+            border-top: 1px solid #1f0e33;
+            padding-top: 14px;
         }
-        .result-panel .label { color: #8aa3c9; font-size: 14px; font-weight: 600; }
-        .result-panel .key {
-            color: #00ff88;
-            font-size: 22px;
-            font-weight: 700;
-            word-break: break-all;
-            flex: 1;
-            min-width: 120px;
-            background: #00000044;
-            padding: 6px 16px;
-            border-radius: 40px;
-            font-family: 'Courier New', monospace;
-            letter-spacing: 0.5px;
+        .status-bar .dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background: #a78bfa;
+            border-radius: 50%;
+            margin-left: 6px;
+            animation: pulse-dot 1.8s infinite;
         }
-        .copy-btn { background: #1e3a5f; border: none; color: #fff; padding: 10px 24px; border-radius: 40px; font-weight: 600; cursor: pointer; transition: 0.25s; }
-        .copy-btn:hover { background: #00d4ff; color: #0a0e17; box-shadow: 0 0 30px #00d4ff66; }
-        .footer { display: flex; justify-content: space-between; align-items: center; margin-top: 16px; color: #4a6b8a; font-size: 12px; border-top: 1px solid #14273d; padding-top: 14px; }
-        .timer-box { display: flex; align-items: center; gap: 12px; }
-        .spinner { display: none; width: 20px; height: 20px; border: 3px solid #1e3a5f; border-top: 3px solid #00d4ff; border-radius: 50%; animation: spin 0.7s linear infinite; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .proxy-note { background: #0d1a2b; padding: 6px 14px; border-radius: 40px; border: 1px solid #1a2f47; font-size: 11px; color: #5f82aa; }
-        @media (max-width: 600px) { .card { padding: 20px; } .row button { width: 100%; justify-content: center; } }
+        @keyframes pulse-dot {
+            0% { opacity: 0.3; transform: scale(0.8); }
+            50% { opacity: 1; transform: scale(1.2); }
+            100% { opacity: 0.3; transform: scale(0.8); }
+        }
+        .status-bar .version {
+            background: #1f0e33;
+            padding: 2px 14px;
+            border-radius: 30px;
+            font-size: 10px;
+            color: #8b6aaa;
+        }
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 550px) {
+            .glass-card { padding: 28px 18px; border-radius: 32px; }
+            .brand h1 { font-size: 22px; }
+            .input-wrapper { padding: 2px 2px 2px 14px; }
+            .input-wrapper input { padding: 14px 0; font-size: 14px; }
+            .paste-btn { width: 44px; height: 44px; font-size: 17px; }
+            .download-btn { font-size: 17px; padding: 16px; }
+        }
+        /* ===== صوت مخفي (للتأثيرات) ===== */
+        #clickSound { display: none; }
     </style>
 </head>
 <body>
-<div class="card">
 
-    <!-- الرأس -->
-    <div class="header">
-        <h1>⚡ <span>Delta Bypass</span></h1>
-        <span class="badge">V15 • PURE JS</span>
-    </div>
-    <div class="sub">
-        <span>🚀 يعمل بكامل طاقة المتصفح (بدون خادم خلفي)</span>
-        <code>← وكيل CORS مدمج</code>
-        <code>← فك Base64 تلقائي</code>
-    </div>
+    <!-- ===== قماش النجوم ===== -->
+    <canvas id="starfield"></canvas>
 
-    <!-- الإدخال -->
-    <div class="input-area">
-        <label>📎 الصق رابط دلتا (auth.platorelay.com / lootlabs)</label>
-        <div class="row">
-            <input type="url" id="linkInput" placeholder="https://auth.platorelay.com/a?d=..." value="https://auth.platorelay.com/a?d=2OgCDAgnXNScdEnlzMC0cmNiYhUADUzyK3SbKGVKKyLiLHsiQaH7Z54A9caSXIi4tumGipkyaktv593OmYM06bnbE3G7bnbry4Ghz3CrrgcxnCcXf7SIcVKdLlnlArUvgYWU9aiVyQKg56j9Tu774wYwjuEkUIk0v1KitK65xP1Hlqw08dCvNzJrR2zHbwDMkXAFosT530WM7XkMveQaXnOjRs0Sm05R8NY6a1wRkzUXbMLBIlAKeqknEWnILZ4ElvBzHzit2i75ewPJ9VLyLCbb3J7AAgw9pnHlJPFn1JnT6tzPkJ25IDAzJNorZizuoOxP4DEfKUYsmACu1Al2I5B463Im2Np8No1widqZRt9LWlvagfGyiOfkG8ApJT22ojh8pO2jQo3WcPENXjjsf0qCo8BGzvtRh7Ar3bwpk4yMPY2FFts1jOz6DYLsTjx8oKvXLlrzJFeCAyLtWvld8JqfHDPEGOWwrgw">
-            <button id="runBtn">🚀 بدء التخطي</button>
+    <!-- ===== الصوت المخفي (يتم تشغيله عبر JS) ===== -->
+    <audio id="clickSound" preload="auto">
+        <source src="data:audio/wav;base64,U0lGR...=" type="audio/wav">
+    </audio>
+    <!-- نستخدم صوت مولّد بـ JS كاحتياطي -->
+
+    <!-- ===== الطبقة الرئيسية ===== -->
+    <div class="main-layer">
+        <div class="glass-card">
+
+            <!-- الترحيب -->
+            <div class="brand">
+                <span class="brand-icon">🪐</span>
+                <h1>متصفح SZ</h1>
+            </div>
+            <div class="welcome-sub">
+                <span>✨</span> لتنزيل فيديوهات تيك توك بدون علامة مائية <span>✨</span><br />
+                بأعلى دقة ممكنة
+            </div>
+
+            <!-- حقل الإدخال + زر اللصق -->
+            <div class="input-wrapper">
+                <input type="url" id="tiktokInput" placeholder="https://www.tiktok.com/@user/video/123456789" dir="ltr" />
+                <button class="paste-btn" id="pasteBtn" title="لصق آخر رابط من الحافظة">📋</button>
+            </div>
+
+            <!-- زر التحميل -->
+            <button class="download-btn" id="downloadBtn">
+                <span class="icon-dl">⬇️</span> تحميل بأعلى دقة
+            </button>
+
+            <!-- منطقة الخطأ -->
+            <div id="errorDisplay" class="error-msg"></div>
+
+            <!-- شريط الحالة -->
+            <div class="status-bar">
+                <span><span class="dot"></span> جاهز</span>
+                <span class="version">v2.0 • SZ</span>
+            </div>
+
         </div>
     </div>
 
-    <!-- سجل الأحداث -->
-    <div class="log-box" id="logBox">
-        <div class="log-entry"><span class="log-time">[نظام]</span><span class="log-msg sys">المحرك جاهز (JavaScript 100%).</span></div>
-        <div class="log-entry"><span class="log-time">[نظام]</span><span class="log-msg sys">سيتم استخدام وكيل CORS لقراءة الصفحة النهائية.</span></div>
-    </div>
+    <script>
+        // ============================================================
+        //  1. نظام النجوم (Canvas) – تصعد للأبد
+        // ============================================================
+        (function initStars() {
+            const canvas = document.getElementById('starfield');
+            const ctx = canvas.getContext('2d');
+            let width, height;
+            const stars = [];
+            const STAR_COUNT = 240;
 
-    <!-- نتيجة المفتاح -->
-    <div class="result-panel">
-        <span class="label">🔑 المفتاح المستخرج:</span>
-        <span class="key" id="resultKey">---</span>
-        <button class="copy-btn" onclick="copyKey()">📋 نسخ</button>
-    </div>
+            function resize() {
+                width = canvas.width = window.innerWidth;
+                height = canvas.height = window.innerHeight;
+            }
+            window.addEventListener('resize', resize);
+            resize();
 
-    <!-- الشريط السفلي -->
-    <div class="footer">
-        <span id="statusText">🟢 جاهز للتخطي</span>
-        <div class="timer-box">
-            <div class="spinner" id="spinner"></div>
-            <span id="timerDisplay">0s</span>
-            <span style="color:#1f3145;">|</span>
-            <span class="proxy-note">🔄 Proxy: api.allorigins.win</span>
-        </div>
-    </div>
-</div>
-
-<script>
-    // =====================================================
-    //  خيارات الوكيل (يمكنك تغييره إلى أي وكيل CORS آخر)
-    // =====================================================
-    const PROXY_URL = "https://api.allorigins.win/raw?url=";
-
-    // =====================================================
-    //  عناصر الصفحة
-    // =====================================================
-    const logBox = document.getElementById('logBox');
-    const linkInput = document.getElementById('linkInput');
-    const runBtn = document.getElementById('runBtn');
-    const resultKey = document.getElementById('resultKey');
-    const statusText = document.getElementById('statusText');
-    const spinner = document.getElementById('spinner');
-    const timerDisplay = document.getElementById('timerDisplay');
-    let timerInterval = null;
-    let startTime = 0;
-
-    // =====================================================
-    //  دوال السجل
-    // =====================================================
-    function addLog(message, type = 'inf') {
-        const entry = document.createElement('div');
-        entry.className = 'log-entry';
-        const time = new Date().toLocaleTimeString('ar-EG', { hour12: false });
-        let cls = 'inf';
-        if (type === 'ok') cls = 'ok';
-        else if (type === 'err') cls = 'err';
-        else if (type === 'sys') cls = 'sys';
-        entry.innerHTML = `<span class="log-time">[${time}]</span><span class="log-msg ${cls}">${message}</span>`;
-        logBox.appendChild(entry);
-        logBox.scrollTop = logBox.scrollHeight;
-    }
-
-    // =====================================================
-    //  نسخ المفتاح
-    // =====================================================
-    function copyKey() {
-        const text = resultKey.innerText;
-        if (text && text !== '---' && !text.includes('جاري')) {
-            navigator.clipboard.writeText(text).then(() => {
-                addLog('✅ تم النسخ للحافظة!', 'ok');
-            }).catch(() => {
-                const area = document.createElement('textarea');
-                area.value = text;
-                document.body.appendChild(area);
-                area.select();
-                document.execCommand('copy');
-                area.remove();
-                addLog('✅ تم النسخ (طريقة بديلة)', 'ok');
-            });
-        } else {
-            addLog('⚠️ لا يوجد مفتاح صالح للنسخ.', 'err');
-        }
-    }
-
-    // =====================================================
-    //  دوال فك التشفير الأساسية (تُنفذ في المتصفح)
-    // =====================================================
-    function extractKeyFromText(text) {
-        if (!text) return null;
-        // 1- FREE_ + 32 حرف سداسي
-        let match = text.match(/FREE_[a-fA-F0-9]{32}/);
-        if (match) return match[0];
-        // 2- token / key
-        match = text.match(/(?:token|key|hash)\s*[:=]\s*["']?([a-fA-F0-9]{32,64})/i);
-        if (match) return match[1];
-        // 3- سلسلة طويلة (32-64 حرف)
-        match = text.match(/\b([A-Za-z0-9_\-]{32,64})\b/);
-        if (match) return match[1];
-        return null;
-    }
-
-    function decodeBase64FromLink(link) {
-        // استخراج ?d= أو &data=
-        const m = link.match(/[?&](?:d|data)=([^&\s]+)/);
-        if (!m) return null;
-        let raw = m[1];
-        try {
-            // فك ترميز URL
-            let decoded = decodeURIComponent(raw);
-            // فك Base64
-            let padded = decoded + '='.repeat((4 - decoded.length % 4) % 4);
-            let b64 = atob(padded);
-            // بحث عن مفتاح داخله
-            return extractKeyFromText(b64) || b64;
-        } catch(e) {
-            return null;
-        }
-    }
-
-    // =====================================================
-    //  وظيفة التخطي الرئيسية (تعمل على المتصفح)
-    // =====================================================
-    async function runBypass() {
-        const url = linkInput.value.trim();
-        if (!url) {
-            addLog('⚠️ الرجاء إدخال رابط صالح.', 'err');
-            return;
-        }
-
-        // إعادة ضبط الواجهة
-        resultKey.innerText = '...جاري...';
-        addLog(`🚀 بدء التخطي للرابط: ${url.substring(0, 70)}...`, 'inf');
-        runBtn.disabled = true;
-        runBtn.innerText = '⏳ جارٍ التخطي...';
-        spinner.style.display = 'block';
-        statusText.innerText = '⏳ جلب البيانات...';
-        startTime = Date.now();
-        if (timerInterval) clearInterval(timerInterval);
-        timerInterval = setInterval(() => {
-            timerDisplay.innerText = Math.floor((Date.now() - startTime) / 1000) + 's';
-        }, 1000);
-
-        try {
-            // ========== الخطوة 1: فك Base64 المحلي (سريع) ==========
-            addLog('🔍 الخطوة 1: فك تشفير ?d= محلياً (Base64)...', 'inf');
-            let localKey = decodeBase64FromLink(url);
-            if (localKey && localKey.length >= 20) {
-                // إذا كان يبدأ بـ FREE_ أو طويلاً
-                if (localKey.match(/FREE_[a-fA-F0-9]{32}/)) {
-                    resultKey.innerText = localKey;
-                    addLog(`✅ تم استخراج المفتاح مباشرة من Base64!`, 'ok');
-                    statusText.innerText = '✅ اكتمل (بدون طلب خارجي)';
-                    // انتظر 11 ثانية ثم انهي
-                    await sleep(11000);
-                    finalizeRun(localKey);
-                    return;
-                }
+            // إنشاء النجوم
+            for (let i = 0; i < STAR_COUNT; i++) {
+                stars.push({
+                    x: Math.random() * width,
+                    y: Math.random() * height,
+                    size: Math.random() * 2.2 + 0.6,
+                    speed: Math.random() * 0.8 + 0.3,
+                    opacity: Math.random() * 0.8 + 0.3,
+                    twinkle: Math.random() * 0.02 + 0.005
+                });
             }
 
-            // ========== الخطوة 2: إرسال الطلب عبر الوكيل ==========
-            addLog('🌐 الخطوة 2: إرسال الطلب إلى وكيل CORS...', 'inf');
-            const proxyLink = PROXY_URL + encodeURIComponent(url);
-            const response = await fetch(proxyLink);
-            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            function drawStars() {
+                ctx.clearRect(0, 0, width, height);
 
-            const html = await response.text();
-            addLog(`📄 تم جلب الصفحة (حجم: ${html.length} حرف).`, 'sys');
+                // خلفية متدرجة (تعمق)
+                const grad = ctx.createRadialGradient(width/2, height*0.3, 100, width/2, height*0.3, height*1.2);
+                grad.addColorStop(0, '#1a0033');
+                grad.addColorStop(1, '#05000a');
+                ctx.fillStyle = grad;
+                ctx.fillRect(0, 0, width, height);
 
-            // ========== الخطوة 3: البحث عن المفتاح في HTML ==========
-            addLog('🔍 الخطوة 3: تحليل HTML بحثاً عن FREE_...', 'inf');
-            let key = extractKeyFromText(html);
-            if (key) {
-                resultKey.innerText = key;
-                addLog(`✅ تم العثور على المفتاح في الصفحة: ${key}`, 'ok');
-                statusText.innerText = '✅ اكتمل (من HTML)';
-                await sleep(11000);
-                finalizeRun(key);
+                // رسم النجوم
+                for (let s of stars) {
+                    // تحريك للأعلى
+                    s.y -= s.speed;
+                    if (s.y < -10) {
+                        s.y = height + 10;
+                        s.x = Math.random() * width;
+                    }
+
+                    // وميض خفيف
+                    const flicker = Math.sin(Date.now() * s.twinkle) * 0.2 + 0.8;
+                    const alpha = s.opacity * flicker;
+
+                    ctx.beginPath();
+                    ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2);
+                    // توهج أرجواني للنجوم
+                    const gradient = ctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, s.size * 2.5);
+                    gradient.addColorStop(0, `rgba(200, 160, 255, ${alpha})`);
+                    gradient.addColorStop(1, `rgba(120, 60, 200, 0)`);
+                    ctx.fillStyle = gradient;
+                    ctx.fill();
+
+                    // لب أبيض
+                    ctx.beginPath();
+                    ctx.arc(s.x, s.y, s.size * 0.5, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(255, 255, 255, ${alpha * 0.7})`;
+                    ctx.fill();
+                }
+
+                requestAnimationFrame(drawStars);
+            }
+            drawStars();
+        })();
+
+        // ============================================================
+        //  2. نظام الصوت (نقرات خفيفة)
+        // ============================================================
+        function playClickSound() {
+            try {
+                // توليد صوت نبضي باستخدام Web Audio (بدون ملف خارجي)
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioCtx.createOscillator();
+                const gainNode = audioCtx.createGain();
+                oscillator.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+
+                oscillator.frequency.value = 1200;
+                oscillator.type = 'sine';
+                gainNode.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.08);
+                oscillator.start(audioCtx.currentTime);
+                oscillator.stop(audioCtx.currentTime + 0.08);
+            } catch(e) { /* تجاهل إن تعذر */ }
+        }
+
+        // ربط الصوت بكل النقرات المهمة
+        document.querySelectorAll('button, .paste-btn, .download-btn').forEach(btn => {
+            btn.addEventListener('click', playClickSound);
+        });
+
+        // ============================================================
+        //  3. وظيفة اللصق من الحافظة
+        // ============================================================
+        const pasteBtn = document.getElementById('pasteBtn');
+        const inputField = document.getElementById('tiktokInput');
+
+        pasteBtn.addEventListener('click', async () => {
+            try {
+                const text = await navigator.clipboard.readText();
+                if (text) {
+                    inputField.value = text.trim();
+                    // تأثير وميض
+                    inputField.style.borderColor = '#a855f7';
+                    setTimeout(() => inputField.style.borderColor = '', 400);
+                    playClickSound();
+                }
+            } catch (e) {
+                // محاولة بديلة باستخدام execCommand (للأجهزة القديمة)
+                try {
+                    inputField.focus();
+                    document.execCommand('paste');
+                } catch (e2) {
+                    alert('عذراً، لا يمكن الوصول إلى الحافظة. الرجاء لصق الرابط يدوياً.');
+                }
+            }
+        });
+
+        // ============================================================
+        //  4. وظيفة التحميل الرئيسية (TikTok HD بدون علامة مائية)
+        // ============================================================
+        const downloadBtn = document.getElementById('downloadBtn');
+        const errorDisplay = document.getElementById('errorDisplay');
+
+        // نستخدم واجهة برمجة tikwm.com المجانية (الأكثر ثباتاً)
+        const API_URL = 'https://www.tikwm.com/api/';
+
+        downloadBtn.addEventListener('click', async () => {
+            const url = inputField.value.trim();
+            if (!url) {
+                errorDisplay.textContent = '‼️ عذراً، أنت لم تضع رابط.';
+                errorDisplay.style.color = '#f87171';
                 return;
             }
 
-            // ========== الخطوة 4: البحث في ملفات JavaScript ==========
-            addLog('📜 الخطوة 4: البحث عن روابط JS وتحليلها...', 'inf');
-            const jsLinks = html.match(/src\s*=\s*["']([^"']+\.js[^"']*)["']/gi) || [];
-            let foundInJS = false;
-            for (let jsLink of jsLinks) {
-                let clean = jsLink.replace(/src\s*=\s*["']/, '').replace(/["']$/, '');
-                let fullJsUrl = new URL(clean, url).href;
-                try {
-                    let jsResp = await fetch(PROXY_URL + encodeURIComponent(fullJsUrl));
-                    if (jsResp.ok) {
-                        let jsText = await jsResp.text();
-                        let jsKey = extractKeyFromText(jsText);
-                        if (jsKey) {
-                            resultKey.innerText = jsKey;
-                            addLog(`✅ تم العثور على المفتاح داخل JavaScript: ${jsKey}`, 'ok');
-                            statusText.innerText = '✅ اكتمل (من JS)';
-                            foundInJS = true;
-                            await sleep(11000);
-                            finalizeRun(jsKey);
-                            return;
-                        }
-                    }
-                } catch(e) {}
+            // التحقق من أن الرابط من تيك توك
+            if (!url.includes('tiktok.com') && !url.includes('vm.tiktok')) {
+                errorDisplay.textContent = '⚠️ الرابط غير صالح. الرجاء إدخال رابط تيك توك صحيح.';
+                errorDisplay.style.color = '#fbbf24';
+                return;
             }
 
-            // ========== الخطوة 5: فك Base64 من الرابط كحل أخير ==========
-            addLog('⚠️ لم يتم العثور على FREE_، نعيد محاولة فك Base64...', 'inf');
-            let fallback = decodeBase64FromLink(url);
-            if (fallback) {
-                // نأخذ أول 40 حرفاً إذا كان طويلاً جداً
-                let cleanFallback = fallback.replace(/^FREE_/, '').match(/[a-fA-F0-9]{32}/);
-                if (cleanFallback) {
-                    let finalKey = `FREE_${cleanFallback[0]}`;
-                    resultKey.innerText = finalKey;
-                    addLog(`⚠️ تم استخدام مفتاح احتياطي من Base64: ${finalKey}`, 'inf');
-                    statusText.innerText = '⚠️ احتياطي (قد يعمل)';
-                    await sleep(11000);
-                    finalizeRun(finalKey);
-                    return;
+            errorDisplay.textContent = '';
+            downloadBtn.disabled = true;
+            downloadBtn.innerHTML = '<span class="icon-dl">⏳</span> جاري التحميل...';
+
+            try {
+                // إرسال الطلب إلى API
+                const response = await fetch(`${API_URL}?url=${encodeURIComponent(url)}`);
+                const data = await response.json();
+
+                if (data.code !== 0 || !data.data) {
+                    throw new Error('الرابط غير صحيح أو الفيديو غير موجود.');
                 }
+
+                // الحصول على أعلى دقة (hdplay) أو fallback (play)
+                let videoUrl = data.data.hdplay || data.data.play;
+                if (!videoUrl) {
+                    throw new Error('لم نتمكن من استخراج رابط الفيديو.');
+                }
+
+                // بدء التحميل عبر إنشاء رابط مؤقت
+                const a = document.createElement('a');
+                a.href = videoUrl;
+                a.download = `tiktok_${Date.now()}.mp4`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+
+                errorDisplay.textContent = '✅ تم بدء التحميل بأعلى دقة!';
+                errorDisplay.style.color = '#34d399';
+
+            } catch (error) {
+                errorDisplay.textContent = `❌ فشل التحميل: ${error.message || 'خطأ غير متوقع'}`;
+                errorDisplay.style.color = '#f87171';
+            } finally {
+                downloadBtn.disabled = false;
+                downloadBtn.innerHTML = '<span class="icon-dl">⬇️</span> تحميل بأعلى دقة';
             }
+        });
 
-            // ========== الفشل النهائي ==========
-            resultKey.innerText = '❌ لم يُعثر';
-            addLog('❌ فشل استخراج المفتاح بعد جميع المحاولات.', 'err');
-            statusText.innerText = 'فشل';
-            await sleep(11000);
-            finalizeRun(null);
+        // ============================================================
+        //  5. منع السكرولنج نهائياً (تأكيد)
+        // ============================================================
+        window.addEventListener('wheel', (e) => e.preventDefault(), { passive: false });
+        window.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowDown' || e.key === 'ArrowUp' || e.key === 'PageDown' || e.key === 'PageUp') {
+                e.preventDefault();
+            }
+        });
 
-        } catch (error) {
-            addLog(`🔥 خطأ: ${error.message}`, 'err');
-            resultKey.innerText = '🌐 خطأ شبكة';
-            statusText.innerText = 'فشل';
-            await sleep(11000);
-            finalizeRun(null);
-        }
-    }
+        // ============================================================
+        //  6. رسالة ترحيب أولية
+        // ============================================================
+        console.log('🪐 متصفح SZ - TikTok Downloader Pro');
+        console.log('✨ مرحباً بك! الصق الرابط وانطلق.');
 
-    // =====================================================
-    //  دالة إنهاء التشغيل (توقف المؤقت والأزرار)
-    // =====================================================
-    function finalizeRun(key) {
-        clearInterval(timerInterval);
-        spinner.style.display = 'none';
-        runBtn.disabled = false;
-        runBtn.innerText = '🚀 بدء التخطي';
-        timerDisplay.innerText = '0s';
-        if (key) {
-            // المفتاح موجود مسبقاً
-        } else {
-            // لا شيء
-        }
-        // إذا لم يكن المفتاح موجوداً نضع علامة
-    }
+        // ============================================================
+        //  7. دعم الضغط على Enter في حقل الإدخال
+        // ============================================================
+        inputField.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                downloadBtn.click();
+            }
+        });
 
-    // دالة مساعدة للنوم
-    function sleep(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
-
-    // =====================================================
-    //  ربط الأزرار والأحداث
-    // =====================================================
-    runBtn.addEventListener('click', runBypass);
-    linkInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') runBypass();
-    });
-
-    // =====================================================
-    //  سجلات البداية
-    // =====================================================
-    addLog('🖥️ محرك التخطي قيد التشغيل (جافاسكريبت خالص).', 'sys');
-    addLog(`🔗 وكيل CORS المستخدم: ${PROXY_URL}`, 'sys');
-    addLog('✅ يمكنك الآن لصق الرابط والضغط على بدء التخطي.', 'sys');
-</script>
+        // تحذير: في حال عدم وجود صوت Web Audio (نادر) نستخدم fallback
+        console.log('🔊 أصوات النقرات مفعلة (Web Audio).');
+    </script>
 </body>
 </html>
